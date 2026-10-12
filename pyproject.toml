@@ -1,0 +1,16 @@
+[project]
+name = "tux-agent"
+version = "0.1.0"
+description = "Claude Code ajanlarını terminalde piksel bir ofiste dolaşan Tux'lar olarak gösterir"
+requires-python = ">=3.10"
+dependencies = ["pillow>=10"]
+
+[project.scripts]
+tux-agent = "tux_agent.app:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["tux_agent"]
