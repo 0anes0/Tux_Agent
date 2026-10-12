@@ -1,9 +1,22 @@
 [project]
 name = "tux-agent"
 version = "0.1.0"
-description = "Claude Code ajanlarını terminalde piksel bir ofiste dolaşan Tux'lar olarak gösterir"
+description = "Claude Code agents as Tux penguins in a pixel-art office, right in your terminal"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [{ name = "Ahmet Enes" }]
 requires-python = ">=3.10"
 dependencies = ["pillow>=10"]
+keywords = ["claude-code", "tux", "pixel-art", "terminal", "kitty", "tui"]
+classifiers = [
+    "Environment :: Console",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Topic :: Games/Entertainment",
+]
+
+[project.urls]
+Homepage = "https://github.com/0anes0/Tux_Agent"
 
 [project.scripts]
 tux-agent = "tux_agent.app:main"
@@ -14,3 +27,6 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
 packages = ["tux_agent"]
+
+[tool.setuptools.package-data]
+tux_agent = ["assets/CREDITS.md", "assets/sprites/*.png"]

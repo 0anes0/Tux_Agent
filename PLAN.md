@@ -87,14 +87,14 @@ yalnızca 80×48 piksel verir, bu yüzden yedek çözüm olarak kalır.
 - [ ] Basit ofis editörü (masa/mobilya yerleştirme)
 
 ### Faz 4 — Yayın (beğenirsek)
-- [ ] README, GIF/demo videosu, kurulum scripti
-- [ ] Lisans dosyaları, GitHub'a push
+- [x] README, GIF/demo videosu, kurulum scripti
+- [x] Lisans dosyaları, GitHub'a push
 
 ---
 
 ## Lisans notları (önemli)
 
-- **Kod:** MIT (öneri).
+- **Kod:** GNU GPL v3 (repo oluşturulurken seçildi).
 - **Görseller:** ayrı lisans. Örnek kaynaklar:
   - [Tux – Kyrodian Legends style](https://opengameart.org/content/tux-kyrodian-legends-style) — CC-BY-SA 4.0 / GPL 3.0
   - Worldmap Tux (Vaesea) — CC-BY-SA 4.0, üstten görünüm, ofise en uygun aday
@@ -108,9 +108,18 @@ yalnızca 80×48 piksel verir, bu yüzden yedek çözüm olarak kalır.
 
 ```
 Tux_Agent/
-├── assets/sprites/   Tux sprite sheet'leri
-├── assets/office/    ofis tileset'i
-├── tux_agent/        TUI: oyun döngüsü, harita, karakterler, render backend'leri
-├── hooks/            Claude Code hook script'i
-└── docs/             notlar, araştırma
+├── tux_agent/            Python paketi
+│   ├── app.py            ana döngü, sahne, CLI
+│   ├── agent.py          Tux: durum makinesi, yol bulma, animasyon
+│   ├── office.py         kodla çizilen ofis
+│   ├── sprites.py        sprite sheet ve animasyonlar
+│   ├── backends.py       kitty / halfblock çizim
+│   ├── events.py         socket dinleyici, olay → eylem
+│   ├── hook.py           Claude Code hook script'i
+│   ├── install.py        tux-agent install / uninstall
+│   ├── i18n.py           İngilizce / Türkçe metinler
+│   └── assets/           paketle gelen sprite + CREDITS.md
+├── art/                  kaynak çizimler (pakete girmez)
+├── docs/demo.gif         README animasyonu (tools/demo_gif.py üretir)
+└── tools/                yardımcı script'ler
 ```

@@ -8,7 +8,8 @@ import time
 from PIL import Image
 
 from . import backends
-from .agent import LABELS, Tux
+from . import i18n
+from .agent import Tux
 from .events import Listener, activity_for
 from .office import Office
 from .sprites import Sprites
@@ -23,7 +24,8 @@ STEPS = {"up": (0, -1), "down": (0, 1), "left": (-1, 0), "right": (1, 0)}
 class Scene:
     """One Tux per live Claude Code session; a demo Tux walks around while there are none."""
 
-    def __init__(self, demo: bool = True):
+    def __init__(self, demo: bool = True, lang: str = "en"):
+        self.text = i18n.TEXT[lang]
         self.office = Office()
         self.sprites = Sprites()
         self.agents: dict[str, Tux] = {}
@@ -114,23 +116,24 @@ class Scene:
         return img
 
     def status(self) -> str:
+        tx = self.text
+
         def label(t: Tux) -> str:
-            return LABELS[t.activity] if t.arrived else f"→ {LABELS[t.activity]}"
+            return tx[t.activity] if t.arrived else f"→ {tx[t.activity]}"
 
         if self.agents:
             parts = [f"🐧 {self.names[sid]}: {label(t)}" for sid, t in self.agents.items()]
-            return " " + "   ".join(parts) + "   · q: çık"
+            return " " + "   ".join(parts) + f"   · {tx['quit']}"
         if self.demo_tux:
-            mode = "demo" if self.demo else "manuel"
-            return (f" 🐧 Tux: {label(self.demo_tux)}   [{mode} · Claude Code oturumu bekleniyor]   "
-                    "oklar: yürü · t/r/b/w/c/s/a/l: eylem · boşluk: demo · q: çık")
-        return " Claude Code oturumu bekleniyor…   q: çık"
+            mode = tx["demo"] if self.demo else tx["manual"]
+            return f" 🐧 Tux: {label(self.demo_tux)}   [{mode} · {tx['waiting']}]   {tx['keys']} · {tx['quit']}"
+        return f" {tx['waiting']}   {tx['quit']}"
 
 
-def run(backend_name: str | None):
+def run(backend_name: str | None, lang: str):
     from .term import Terminal
 
-    scene = Scene()
+    scene = Scene(lang=lang)
     listener = Listener()
     resized = True
 
@@ -164,10 +167,14 @@ def run(backend_name: str | None):
             last = now
 
 
-def export_gif(path: str, seconds: float, scale: int):
-    scene = Scene()
+def export_gif(path: str, seconds: float, scale: int, scene: Scene | None = None, script=()):
+    """Render offscreen to a GIF. `script` is [(seconds, event dict)] fed to scene.handle()."""
+    scene = scene or Scene()
+    script = sorted(script, key=lambda s: s[0])
     frames = []
-    for _ in range(int(seconds * FPS)):
+    for i in range(int(seconds * FPS)):
+        while script and script[0][0] <= i / FPS:
+            scene.handle(script.pop(0)[1])
         scene.update(1 / FPS)
         img = scene.render().convert("RGB")
         frames.append(img.resize((img.width * scale, img.height * scale), Image.NEAREST))
@@ -176,13 +183,21 @@ def export_gif(path: str, seconds: float, scale: int):
 
 
 def main():
-    p = argparse.ArgumentParser(prog="tux-agent", description="Pixel office of Tux agents, in your terminal.")
+    p = argparse.ArgumentParser(prog="tux-agent", description="Claude Code agents as Tux penguins in a pixel office, in your terminal.")
+    sub = p.add_subparsers(dest="command")
+    sub.add_parser("install", help="add the hooks to ~/.claude/settings.json")
+    sub.add_parser("uninstall", help="remove the hooks from ~/.claude/settings.json")
     p.add_argument("--backend", choices=["kitty", "halfblock"], help="default: auto-detect")
+    p.add_argument("--lang", choices=sorted(i18n.TEXT), help="status bar language (default: from $LANG)")
     p.add_argument("--gif", metavar="FILE", help="render the demo to a GIF instead of the terminal")
-    p.add_argument("--seconds", type=float, default=30)
-    p.add_argument("--scale", type=int, default=3)
+    p.add_argument("--seconds", type=float, default=30, help="GIF length")
+    p.add_argument("--scale", type=int, default=3, help="GIF pixel scale")
     args = p.parse_args()
-    if args.gif:
+    if args.command in ("install", "uninstall"):
+        from . import install
+
+        getattr(install, args.command)()
+    elif args.gif:
         export_gif(args.gif, args.seconds, args.scale)
     else:
-        run(args.backend)
+        run(args.backend, args.lang or i18n.detect())

@@ -21,11 +21,6 @@ ACTIVITIES = {
     "wait": (None, "wave"),
     "leave": ("door", None),
 }
-LABELS = {
-    "idle": "boşta", "think": "düşünüyor", "type": "kod yazıyor", "read": "dosya okuyor", "bash": "komut çalıştırıyor",
-    "web": "internette arıyor", "coffee": "kahve alıyor", "rest": "dinleniyor",
-    "wait": "onay bekliyor!", "leave": "çıkıyor",
-}
 
 
 class Tux:

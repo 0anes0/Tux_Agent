@@ -5,7 +5,7 @@ from pathlib import Path
 
 from PIL import Image, ImageOps
 
-ASSETS = Path(__file__).resolve().parent.parent / "assets"
+ASSETS = Path(__file__).resolve().parent / "assets"
 SHEET = ASSETS / "sprites" / "tux.png"
 CELL = 32
 # Feet touch the bottom edge of every cell, horizontally centred.
