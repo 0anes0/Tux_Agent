@@ -4,6 +4,7 @@ import argparse
 import os
 import signal
 import time
+import unicodedata
 
 from PIL import Image
 
@@ -19,6 +20,19 @@ FPS = 15
 DEMO = [("type", 6), ("read", 4), ("type", 5), ("bash", 4), ("web", 3), ("wait", 3), ("coffee", 2), ("rest", 5)]
 HOTKEYS = {"t": "type", "r": "read", "b": "bash", "w": "web", "c": "coffee", "s": "rest", "a": "wait", "l": "leave"}
 STEPS = {"up": (0, -1), "down": (0, 1), "left": (-1, 0), "right": (1, 0)}
+
+
+def fit(text: str, cols: int) -> str:
+    """Cut text to `cols` terminal cells. Wide characters like 🐧 take two, so slicing
+    by characters would overflow the last row and scroll the whole screen."""
+    out, used = [], 0
+    for ch in text:
+        w = 2 if unicodedata.east_asian_width(ch) in "WF" else 1
+        if used + w > cols:
+            break
+        out.append(ch)
+        used += w
+    return "".join(out)
 
 
 class Scene:
@@ -152,7 +166,7 @@ def run(backend_name: str | None, lang: str):
                 term.write(backend.reset() + b"\x1b[2J")
             focus = scene.focus
             frame, status_row = backend.frame(scene.render(), term, (focus.x, focus.y) if focus else (0, 0))
-            status = scene.status()[: term.cols].encode()
+            status = fit(scene.status(), term.cols).encode()
             term.write(frame + b"\x1b[%d;1H\x1b[2K\x1b[7m" % min(status_row, term.rows) + status + b"\x1b[0m")
 
             deadline = last + 1 / FPS
