@@ -68,10 +68,20 @@ class Scene:
             if activity in (None, "leave"):
                 return
             tux = self.agents[sid] = Tux(self.office, self.sprites, self._free_desk())
-            self.names[sid] = os.path.basename((ev.get("cwd") or "").rstrip("/")) or sid[:6]
+            self.names[sid] = self._unique_name(os.path.basename((ev.get("cwd") or "").rstrip("/")) or sid[:6])
             self.demo_tux = None  # real work arrived; the demo Tux clocks out
         if activity:
             tux.want(activity)
+
+    def _unique_name(self, name: str) -> str:
+        """Two sessions in the same folder would both show as "proj"; number the later ones."""
+        taken = set(self.names.values())
+        n = 1
+        label = name
+        while label in taken:
+            n += 1
+            label = f"{name} {n}"
+        return label
 
     def update(self, dt: float):
         self.t += dt
