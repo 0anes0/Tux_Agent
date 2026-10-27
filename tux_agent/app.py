@@ -214,4 +214,7 @@ def main():
     elif args.gif:
         export_gif(args.gif, args.seconds, args.scale)
     else:
-        run(args.backend, args.lang or i18n.detect())
+        try:
+            run(args.backend, args.lang or i18n.detect())
+        except KeyboardInterrupt:
+            pass  # Ctrl+C quits like q; the terminal is already restored
