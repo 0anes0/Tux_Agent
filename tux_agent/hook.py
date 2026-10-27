@@ -8,6 +8,7 @@ isn't running the datagram simply has nowhere to go.
 import json
 import os
 import socket
+import stat
 import sys
 import time
 
@@ -34,9 +35,15 @@ def main():
         "agent_type": data.get("agent_type"),
         "notification": data.get("notification_type"),
     }
+    path = socket_path()
     try:
+        if not os.environ.get("XDG_RUNTIME_DIR"):
+            # /tmp fallback: don't hand events to a folder someone else controls
+            st = os.lstat(os.path.dirname(path))
+            if not stat.S_ISDIR(st.st_mode) or st.st_uid != os.getuid() or st.st_mode & 0o077:
+                return
         with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as s:
-            s.sendto(json.dumps(event).encode(), socket_path())
+            s.sendto(json.dumps(event).encode(), path)
     except OSError:
         pass
 
